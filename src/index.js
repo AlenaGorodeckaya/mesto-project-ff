@@ -30,7 +30,7 @@ const popupImageType= document.querySelector(".popup_type_image");
 
 // @todo: Вывести карточки на страницу
 initialCards.forEach(function(value) {
-  placesList.append(createCard(value, deleteCard, likeImage, openImage)); ///////////////////////////////////////////
+  placesList.append(createCard(value, deleteCard, likeImage, openImage));
 });
 
 //Открытие модального окна (при нажатии на "+" / кнопку редактирования)
@@ -75,7 +75,7 @@ function handleFormSubmitImage () {
     name: inputNewNameCard.value,
     link: inputNewUrlCard.value,
   };
-  placesList.prepend(createCard(newImage, deleteCard, likeImage, openImage)) //!!!!!!!
+  placesList.prepend(createCard(newImage, deleteCard, likeImage, openImage))
 }
 
 popupFormCardSave.addEventListener("submit", function(evt) {
@@ -92,21 +92,4 @@ function openImage(value) {
   captionPopupImage.textContent = value.name;
     openModal(popupImageType);
 }
-
-
-
-
-
-
-
-
-
-//function handleFormSubmit(evt) {
- // evt.preventDefault();
- // titleProfile.textContent = popupInputName.value;
- // descriptionProfile.textContent = popupInputDescription.value;
- // closeModal(editPopupProfile);
-//}
-//editPopupProfix le.addEventListener("submit", handleFormSubmitProfile); // отправка формы редактирования информации
-
 
