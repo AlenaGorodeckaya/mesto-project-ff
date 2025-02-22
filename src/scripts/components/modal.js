@@ -7,7 +7,7 @@ function openModal (modal) {
 // Закрытие модального окна (попап) (общее: "Х",оверлей)
 function closeModal (modal) {
     modal.classList.remove ("popup_is-opened");
-    document.addEventListener ("keydown",closeEsc);
+    document.removeEventListener ("keydown",closeEsc);
 }
 
 //Закрытие модального окна (попап) нажатием на Esc

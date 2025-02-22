@@ -7,7 +7,7 @@ import {createCard, deleteCard, likeImage} from "./scripts/components/card.js";
 // @todo: DOM узлы
 const placesList = document.querySelector(".places__list");
 
-const redactProfile = document.querySelectorAll(".popup");
+const popups = document.querySelectorAll(".popup");
 const buttonEditProfile = document.querySelector(".profile__edit-button"); // кнопка редактирования
 const buttonAddProfile = document.querySelector (".profile__add-button"); // кнопка "+"
 const editPopupProfile = document.querySelector(".popup_type_edit"); //модальное редактор профиля
@@ -43,7 +43,7 @@ buttonEditProfile.addEventListener("click", openPopupProfile);
 buttonAddProfile.addEventListener("click", () => openModal (addPopupNewCard));
 
 //Закрытие модального окна (при нажатии на "х")
-redactProfile.forEach((modal) => {
+popups.forEach((modal) => {
   modal.addEventListener("click", (evt) => {
       if (evt.target.classList.contains(closePopup.classList)) {
           closeModal(modal);
@@ -52,7 +52,7 @@ redactProfile.forEach((modal) => {
 });
 
 //Закрытие модального окна (при нажатии на "оверлей")
-redactProfile.forEach((modal) => {
+popups.forEach((modal) => {
   modal.addEventListener("click", (evt) => {
     if (evt.target.classList.contains('popup_is-opened')) {
         closeModal (modal)
