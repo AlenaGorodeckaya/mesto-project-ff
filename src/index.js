@@ -3,7 +3,7 @@ import "./pages/index.css";
 import {openModal, closeModal} from "./scripts/components/modal.js";
 import {createCard, deleteCard, likeImage} from "./scripts/components/card.js";
 import {enableValidation, clearValidation} from "./scripts/components/validation.js";
-import {receiveUserData, receiveCardsData, updateUserData, addNewCard, updateUserAvatar} from "./scripts/components/api.js"
+import {receiveUserData, receiveCardsData, updateUserData, addNewCard, updateUserAvatar, deleteCardApi} from "./scripts/components/api.js"
 
 // @todo: DOM узлы
 const placesList = document.querySelector(".places__list");
@@ -36,6 +36,10 @@ const profileForm = editPopupProfile.querySelector(".popup__form");
 const confirmPopup = document.querySelector(".popup_type_confirm");
 const confirmDeleteForm = confirmPopup.querySelector(".popup__form");
 
+// Глобальные переменные для хранения информации о карточке (удаление)
+let currentCardId = null;
+let currentCardElement = null;
+
 // Для редактирования аватара
 const profileAvatarImage = document.querySelector(".profile__image");
 const avatarPopupType = document.querySelector(".popup_type_avatar");
@@ -47,7 +51,7 @@ function openPopupProfile () {
   openModal (editPopupProfile);
   popupInputName.value = titleProfile.textContent;
   popupInputDescription.value = descriptionProfile.textContent;
-}
+};
 
 // Обработчик клика для кнопки сохранения
 buttonEditProfile.addEventListener("click", () => {
@@ -60,30 +64,14 @@ buttonEditProfile.addEventListener("click", () => {
 buttonAddProfile.addEventListener("click", () => {
   clearValidation(popupFormCardSave, validationConfig); 
   openModal(addPopupNewCard);
+  popupFormCardSave.reset();
 });
 
-// Закрытие модального окна (при нажатии на "х")
+// Закрытие модального окна (при нажатии на "х" и "оверлей")
 popups.forEach((modal) => {
   modal.addEventListener("click", (evt) => {
-      if (evt.target.classList.contains(closePopup.classList)) {
+      if (evt.target.classList.contains("popup__close") || evt.target.classList.contains("popup_is-opened")) {
       closeModal(modal);
-      // Очистка поля формы
-        if (modal === addPopupNewCard) {
-        popupFormCardSave.reset();
-        }
-      }
-  });
-});
-
-// Закрытие модального окна (при нажатии на "оверлей")
-popups.forEach((modal) => {
-  modal.addEventListener("click", (evt) => {
-      if (evt.target.classList.contains("popup_is-opened")) {
-      closeModal(modal);
-        // Очистка поля формы
-        if (modal === addPopupNewCard) { 
-        popupFormCardSave.reset();
-        };
       }
   });
 });
@@ -108,8 +96,9 @@ updateUserData(newUserName, newDescription)
   // Выполнится в любом случае независимо от статуса промиса.Возвращение кнопки сохранения к исходу
   .finally(() => { 
     toggleButtonLoadingState(submitButton, false);
-  });
-}
+  })
+  .catch((err) => handleApiError("Ошибка обновления данных пользователя:", err));
+};
 
 // Отправка формы редактирования информации
 editPopupProfile.addEventListener("submit", handleFormSubmitProfile);
@@ -126,15 +115,16 @@ function handleFormSubmitImage (evt,userId) {
   addNewCard(newCardName,newCardLink)
   .then((cardData) => {
     // Создаем новую карточку и добавляем её на страницу
-    const cardElement = createCard(cardData, userId, deleteCard, likeImage, openImage);
+    const cardElement = createCard(cardData, userId, deleteCard, likeImage, openImage, openConfirmPopup);
     placesList.prepend(cardElement);
   closeModal(addPopupNewCard);
   popupFormCardSave.reset();
   })
+  .catch((err) => handleApiError("Ошибка добавления карточки:", err))
   .finally(() => {
     toggleButtonLoadingState(submitButton, false);
   });
-}
+};
 
 // Открытие полноразмерного изображения
 function openImage(value) {
@@ -142,7 +132,7 @@ function openImage(value) {
   popupImage.alt = value.name;
   captionPopupImage.textContent = value.name;
     openModal(popupImageType);
-}
+};
 
 // Валидация
 const validationConfig = {
@@ -170,23 +160,24 @@ Promise.all([receiveUserData(), receiveCardsData()])
     // Отображение карточки
     renderCards(cardsData, userId);
     popupFormCardSave.addEventListener("submit", (evt) => handleFormSubmitImage(evt, userId));
-  });
-
-// Функция для отображения карточек
+  })
+  .catch((err) => handleApiError("Ошибка при загрузке данных пользователя или карточек:", err));
+  // Функция для отображения карточек
 function renderCards(cardsData, userId) {
   // Очистка
   placesList.innerHTML = "";
 
   cardsData.forEach((displayCard) => {
-    const cardElement = createCard(displayCard, userId, deleteCard, likeImage, openImage);
+    const cardElement = createCard(displayCard, userId, deleteCard, likeImage, openImage, openConfirmPopup );
     placesList.append(cardElement);
   });
-}
+};
 
 // Обработчик аватара
 profileAvatarImage.addEventListener("click", () => {
   openModal(avatarPopupType);
   clearValidation(avatarPopupForm, validationConfig);
+  avatarPopupForm.reset();
 });
 
 // Отправка формы обновления аватара
@@ -204,11 +195,12 @@ function handleFormSubmitAvatar(evt) {
       closeModal(avatarPopupType);
       avatarPopupForm.reset(); // Очищаем поле формы
     })
+    .catch((err) => handleApiError("Ошибка обновления аватара:", err))
     .finally(() => {
       // Возвращаем исходный текст кнопки
       toggleButtonLoadingState(submitButton, false);
     });
-}
+};
 
 avatarPopupForm.addEventListener("submit", handleFormSubmitAvatar);
 
@@ -221,11 +213,30 @@ function toggleButtonLoadingState(button, loading,) {
     button.textContent = "Сохранить"; //
     button.disabled = false; // Кнопка активна
   }
+};
+
+// Вывод ошибки в консоль
+function handleApiError(errorMessage, err) {
+  console.error(errorMessage, err);
+};
+
+// Обработчик для открытия подтверждения удаления (попап)
+function openConfirmPopup(cardElement, cardId) { 
+  currentCardId = cardId; // Сохранить идентификатор карточки
+  currentCardElement = cardElement; // Сохранить элемент карточки
+  openModal(confirmPopup); 
 }
+
+// Обработчик для формы подтверждения удаления
+function handleFormSubmitConfirm(evt) {
+  evt.preventDefault();
+  deleteCardApi(currentCardId)
+    .then(() => {
+      deleteCard(currentCardElement);
+      closeModal(confirmPopup);
+    })
+    .catch((err) => handleApiError("Ошибка при удалении:", err));
+  };
 
 // Реализация попапа удаления карточки
 confirmDeleteForm.addEventListener("submit", handleFormSubmitConfirm);
-
-function handleFormSubmitConfirm(evt) {
-  evt.preventDefault();
-}

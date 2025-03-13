@@ -7,6 +7,14 @@ const config = {
         },
 };
 
+//Проверка ответа сервера
+function checkResponse(res) {
+  if (res.ok) {
+    return res.json();
+  }
+  return Promise.reject(`Ошибка ${res.status}`);
+}
+
 //Get-запрос к серверу:
 //Запрос данных о пользователе
 function receiveUserData() {
@@ -15,12 +23,7 @@ function receiveUserData() {
     })
     
 //Проверка ответа от сервера
-    .then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(`Ошибка: ${res.status}`);
-    })
+    .then(checkResponse);
   }
 
 //Запрос данных карточек
@@ -30,12 +33,7 @@ function receiveCardsData() {
     })
 
 //Проверка ответа от сервера
-    .then((res) => {
-      if (res.ok) {
-        return res.json(); 
-      }
-      return Promise.reject(`Ошибка: ${res.status}`); 
-    });
+  .then(checkResponse);
   }
 
 //Редактирование профиля
@@ -48,12 +46,7 @@ function updateUserData(name, about) {
         about: about,
       }),
     })
-    .then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(`Ошибка: ${res.status}`);
-    });
+    .then(checkResponse);
   }
 
 // Новая карточка
@@ -66,12 +59,7 @@ function addNewCard(name, link) {
       link: link,
     }),
   })
-  .then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return Promise.reject(`Ошибка: ${res.status}`);
-  });
+  .then(checkResponse);
 }
 
 // Лайк карточки
@@ -80,12 +68,7 @@ function likeCard(cardId) {
     method: 'PUT',
     headers: config.headers,
   })
-  .then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return Promise.reject(`Ошибка: ${res.status}`);
-  });
+  .then(checkResponse);
 }
 
 // Удаление лайка карточки
@@ -94,12 +77,7 @@ function unlikeCard(cardId) {
     method: 'DELETE',
     headers: config.headers,
   })
-  .then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return Promise.reject(`Ошибка: ${res.status}`);
-  });
+  .then(checkResponse);
 }
 
 // Удаление карточки
@@ -108,12 +86,7 @@ function deleteCardApi(cardId) {
     method: 'DELETE',
     headers: config.headers,
   })
-  .then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return Promise.reject(`Ошибка: ${res.status}`);
-  });
+  .then(checkResponse);
 }
 
 // Изменение аватара
@@ -125,12 +98,7 @@ function updateUserAvatar(avatarUrl) {
       avatar: avatarUrl,
     }),
   })
-  .then((res) => {
-    if (res.ok) {
-      return res.json();
-    }
-    return Promise.reject(`Ошибка: ${res.status}`);
-  });
+  .then(checkResponse);
 }
 
   export { receiveUserData, receiveCardsData, updateUserData, addNewCard, likeCard, unlikeCard, deleteCardApi, updateUserAvatar};

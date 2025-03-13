@@ -19,16 +19,8 @@ const hideInputError = (formElement, inputElement, config) => {
 // Проверка валидности
 const checkInputValidity = (formElement, inputElement, config) => {
     // Проверка соответсвия поля регулярному выражению
-    if (inputElement.validity.valueMissing) {
-        inputElement.setCustomValidity("Вы пропустили это поле.");
-    } 
-    else if (inputElement.validity.tooShort) {
-        inputElement.setCustomValidity(`Минимальное количество символов: ${inputElement.minLength}. Длина текста сейчас: ${inputElement.value.length} символ.`);
-    } else if (inputElement.validity.typeMismatch && inputElement.type === "url") {
-        inputElement.setCustomValidity("Введите адрес сайта.");
-    
-    } else if (inputElement.validity.patternMismatch) {
-     inputElement.setCustomValidity(inputElement.dataset.errorMessage);
+    if (inputElement.validity.patternMismatch) {
+      inputElement.setCustomValidity(inputElement.dataset.errorMessage); // Кастомный текст ошибки
     } else {
       inputElement.setCustomValidity("");
     }
@@ -36,7 +28,7 @@ const checkInputValidity = (formElement, inputElement, config) => {
     if (!inputElement.validity.valid) {
       showInputError(formElement, inputElement, inputElement.validationMessage, config); //При не валидном поле
     } else {
-      hideInputError(formElement, inputElement, config); //скрываем ошибку, если поле валидно
+      hideInputError(formElement, inputElement, config); // Скрываем ошибку, если поле валидно
     }
 };
 
